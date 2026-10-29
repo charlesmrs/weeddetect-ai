@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Dataset (pesado, fica só local)
+data/*
+!data/.gitkeep
+
+# Saídas de treino do YOLO
+runs/
