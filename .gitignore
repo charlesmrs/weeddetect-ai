@@ -218,6 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
 # Dataset (pesado, fica só local)
 data/*
 !data/.gitkeep
