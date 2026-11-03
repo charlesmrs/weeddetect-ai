@@ -242,7 +242,9 @@ As coordenadas da caixa estão em pixels: `(x_min, y_min)` é o canto superior e
 
 ## 🧪 Testes no Postman
 
-A coleção [`postman/WeedDetect_AI.postman_collection.json`](postman/WeedDetect_AI.postman_collection.json) tem **6 requisições** e **9 testes automáticos**. Para usar, importe o arquivo no Postman desktop (**Import**) e rode com a API ligada.
+A coleção [`postman/WeedDetect_AI.postman_collection.json`](postman/WeedDetect_AI.postman_collection.json) tem **6 requisições** e **9 testes automáticos**. Para usar, importe o arquivo no Postman desktop (**Import**) e rode com a API ligada. Depois de importar, selecione de novo as imagens da pasta `test_images/` no campo `file` de cada requisição, porque o Postman não leva os arquivos junto com a coleção.
+
+
 
 | Requisição | Resposta esperada | Testes |
 |---|---|---|
@@ -300,7 +302,6 @@ weeddetect-ai/
 
 - **Dataset:** Lu, Y. et al. (2023). *CottonWeedDet12: a 12-class weed dataset of cotton production systems for benchmarking AI models for weed detection.* Zenodo. https://zenodo.org/records/7535814 — versão no [Roboflow Universe](https://universe.roboflow.com/lab-yz5eb/cottonweeddet12). Licença CC BY 4.0.
 - **Artigo de referência:** Dang, F., Chen, D., Lu, Y., Li, Z. (2023). *YOLOWeeds: A novel benchmark of YOLO object detectors for multi-class weed detection in cotton production systems.* Computers and Electronics in Agriculture, 205, 107655.
-- **Imagens externas de teste:** COLE_AQUI_A_ORIGEM_E_O_AUTOR_DAS_FOTOS_EXTERNAS
 - **Modelo:** [Ultralytics YOLO11](https://github.com/ultralytics/ultralytics) (AGPL-3.0).
 
 ---
