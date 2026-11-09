@@ -6,10 +6,14 @@ O modelo identifica **12 espécies de plantas daninhas** em uma imagem e devolve
 
 > Projeto Avaliativo do Módulo 2 — SCTEC, Machine Learning e Visão Computacional.
 
+**🚀 Teste online:** [abrir a API publicada (Swagger)](https://weeddetect-ai-485873057830.us-central1.run.app/docs). Veja o passo a passo e as imagens de teste em [Teste online](#-teste-online).
+
 ---
 
 ## 📋 Sumário
 
+- [Teste online](#-teste-online)
+- [Tecnologias](#%EF%B8%8F-tecnologias)
 - [Contexto e motivação](#-contexto-e-motivação)
 - [Dataset](#-dataset)
 - [Modelo e treinamento](#-modelo-e-treinamento)
@@ -21,6 +25,58 @@ O modelo identifica **12 espécies de plantas daninhas** em uma imagem e devolve
 - [Estrutura do projeto](#-estrutura-do-projeto)
 - [Gestão do projeto](#-gestão-do-projeto)
 - [Créditos](#-créditos)
+
+---
+
+## 🧪 Teste online
+
+A API está publicada no **Google Cloud Run** e pode ser testada direto pelo navegador, no computador ou no celular, sem instalar nada.
+
+### 1. Baixe uma imagem de teste
+
+O modelo foi treinado para reconhecer **12 espécies de daninhas de lavouras de algodão**, fotografadas **de cima, com o solo em volta**. Para ver o modelo funcionando como foi projetado, use as imagens abaixo. Elas são do **conjunto de teste do dataset**, ou seja, o modelo **nunca as viu** durante o treino.
+
+| Imagem | Resultado esperado |
+|---|---|
+| [01_mollugo_verticillata.jpg](https://github.com/charlesmrs/weeddetect-ai/raw/main/test_images/01_mollugo_verticillata.jpg) | *Mollugo verticillata* (confiança ≈ 0,92) |
+| [02_amaranthus_palmeri.jpg](https://github.com/charlesmrs/weeddetect-ai/raw/main/test_images/02_amaranthus_palmeri.jpg) | *Amaranthus palmeri* (≈ 0,98) |
+| [03_duas_daninhas.jpg](https://github.com/charlesmrs/weeddetect-ai/raw/main/test_images/03_duas_daninhas.jpg) | Duas detecções: *Amaranthus palmeri* (≈ 0,97) e *Mollugo verticillata* (≈ 0,53) |
+| [04_amaranthus_palmeri.jpg](https://github.com/charlesmrs/weeddetect-ai/raw/main/test_images/04_amaranthus_palmeri.jpg) | *Amaranthus palmeri* (≈ 0,98) |
+
+No celular: abra o link, segure o dedo sobre a imagem e escolha **Salvar imagem**. No computador: abra o link e use **Salvar imagem como...**.
+
+### 2. Envie a imagem para a API
+
+1. Abra o **[Swagger da API](https://weeddetect-ai-485873057830.us-central1.run.app/docs)**.
+2. Clique em **POST /detect** e depois em **Try it out**.
+3. Em **file**, escolha a imagem que você baixou.
+4. Clique em **Execute** e veja o JSON em **Response body**.
+
+### ⚠️ Antes de testar, saiba que
+
+- **A primeira requisição pode levar até 30 segundos.** Quando ninguém usa a API, o Cloud Run desliga o servidor para não gerar custo. No primeiro acesso, ele liga o container e carrega o modelo (*cold start*). As requisições seguintes respondem em menos de 1 segundo.
+- **Use fotos JPG ou PNG.** Outros formatos são recusados com o erro `400`. No iPhone, as fotos da câmera usam o formato HEIC por padrão; para tirar fotos em JPG, vá em **Ajustes > Câmera > Formatos > Mais Compatível**.
+- **Fotos de outras plantas ou em outras condições podem dar resultados errados.** O modelo só conhece as 12 espécies do dataset, fotografadas de cima. Uma planta diferente, um close-up ou uma foto com flores pode resultar numa lista `detections` vazia ou numa classe errada com confiança baixa. Isso é uma limitação do modelo, e não uma falha da API (veja [Limitações](#%EF%B8%8F-limitações)). As imagens `externa_portulaca_vista_de_cima.png` e `externa_portulaca_closeup.png`, na pasta [`test_images/`](test_images), mostram esse efeito.
+
+---
+
+## 🛠️ Tecnologias
+
+| Tecnologia | Para que foi usada | Por que é importante |
+|---|---|---|
+| **Python 3.11** | Linguagem de todo o projeto | É a linguagem padrão de Machine Learning, com o maior ecossistema de bibliotecas de IA. |
+| **YOLO11s (Ultralytics)** | Modelo de detecção de objetos | Detecta **onde** e **quantas** daninhas há na imagem, em uma única passada ("You Only Look Once"), rápido o bastante para rodar em tempo real num pulverizador ou drone. |
+| **PyTorch** | Base do YOLO, para treino e inferência | É o framework de deep learning por trás do YOLO; no servidor, roda a versão só para CPU, mais leve. |
+| **Fine-tuning (transfer learning)** | Adaptar o YOLO pré-treinado às 12 daninhas | Aproveita o que o modelo já sabe sobre formas e texturas (aprendido no dataset COCO) e exige muito menos dados e tempo de treino do que começar do zero. |
+| **Roboflow** | Download do dataset já no formato YOLO | Entrega as imagens e as anotações prontas para o treino, sem conversão manual. |
+| **Google Colab (GPU L4)** | Ambiente de treino | Oferece GPU na nuvem: o treino levou 36 minutos, contra muitas horas num computador comum. |
+| **FastAPI** | Construção da API | Transforma o modelo num serviço que qualquer sistema pode usar via HTTP, valida as entradas automaticamente e gera a documentação Swagger sozinho. |
+| **Uvicorn** | Servidor da API | Executa a aplicação FastAPI e atende as requisições de forma assíncrona. |
+| **Docker** | Empacotamento da API | Junta Python, bibliotecas, código e modelo numa "caixa" que roda igual em qualquer servidor, eliminando o problema do "na minha máquina funciona". |
+| **Google Cloud Run** | Publicação da API na internet | Executa o container sob demanda e desliga quando não há uso, o que mantém o custo próximo de zero; `--max-instances 1` limita o gasto. |
+| **Postman** | Testes automáticos da API | Verifica códigos de resposta e o formato do JSON, incluindo os casos de erro (`400`, `422`). |
+| **Git, GitHub e GitFlow** | Versionamento | Cada tarefa foi feita numa branch própria e integrada por Pull Request, deixando o histórico organizado e rastreável. |
+| **Trello (Kanban)** | Gestão das tarefas | Mostra o andamento de cada etapa, do Backlog ao Concluído. |
 
 ---
 
@@ -150,6 +206,8 @@ O conjunto de validação foi usado para escolher o melhor modelo, então os nú
 
 ## 🚀 Como rodar a API
 
+Para só testar, use a [versão online](#-teste-online). Para rodar no seu computador, siga os passos abaixo.
+
 ### Pré-requisitos
 
 - Python 3.11
@@ -181,6 +239,16 @@ A API sobe em **http://127.0.0.1:8000**. A documentação interativa (Swagger) f
 
 O modelo treinado (`models/best.pt`, 19 MB) já está no repositório e é carregado uma única vez, quando a API inicia.
 
+### Deploy no Google Cloud Run
+
+A versão online é publicada a partir do [`Dockerfile`](Dockerfile) do repositório. O arquivo [`.gcloudignore`](.gcloudignore) evita enviar pastas desnecessárias, como o ambiente virtual e o dataset. Com o [gcloud CLI](https://cloud.google.com/sdk/docs/install) instalado e um projeto configurado:
+
+```bash
+gcloud run deploy weeddetect-ai --source . --region us-central1 --allow-unauthenticated --memory 2Gi --cpu 1 --max-instances 1 --timeout 120
+```
+
+O Google monta a imagem a partir do Dockerfile (cerca de 10 minutos) e devolve o endereço público da API. O `--max-instances 1` limita o custo: no máximo uma cópia da API roda ao mesmo tempo.
+
 ---
 
 ## 🔌 Endpoints
@@ -205,8 +273,10 @@ Recebe uma imagem (JPG ou PNG) pelo campo `file` (form-data) e devolve as daninh
 **Exemplo de requisição:**
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/detect" -F "file=@test_images/portulaca2.png"
+curl -X POST "https://weeddetect-ai-485873057830.us-central1.run.app/detect" -F "file=@test_images/03_duas_daninhas.jpg"
 ```
+
+(Rodando localmente, troque o endereço por `http://127.0.0.1:8000/detect`.)
 
 **Exemplo de resposta:**
 
@@ -267,13 +337,15 @@ Os testes verificam se a **API** funciona (código de resposta e formato do JSON
 weeddetect-ai/
 ├── main.py              # API FastAPI (GET / e POST /detect)
 ├── requirements.txt     # Dependências do projeto
+├── Dockerfile           # Empacotamento da API para o deploy
+├── .gcloudignore        # Arquivos que não vão para o Cloud Run
 ├── models/
 │   └── best.pt          # Modelo YOLO11s treinado
 ├── notebooks/
 │   └── weeddetect_training.ipynb   # Download do dataset, treino e avaliação
 ├── postman/
 │   └── WeedDetect_AI.postman_collection.json   # Coleção de testes
-├── test_images/         # Imagens para testar a API
+├── test_images/         # Imagens para testar a API (do dataset e externas)
 ├── docs/                # Gráficos e prints usados neste README
 └── data/                # Dataset local (ignorado pelo Git)
 ```
@@ -282,7 +354,7 @@ weeddetect-ai/
 
 ## 🗂️ Gestão do projeto
 
-- **Kanban (Trello):** [LINK_DO_TRELLO](https://trello.com/b/FIuFOX6B/%F0%9F%8C%BF-weeddetect-ai)
+- **Kanban (Trello):** [quadro WeedDetect AI](https://trello.com/b/FIuFOX6B/%F0%9F%8C%BF-weeddetect-ai)
 - **Git Flow:** cada tarefa do Trello virou uma branch `feature/...` ou `docs/...`, criada a partir da `develop` e integrada por Pull Request. Ao final, a `develop` foi integrada à `main`.
 
 | Cartão no Trello | Branch |
@@ -295,6 +367,8 @@ weeddetect-ai/
 | Endpoint de detecção | `feature/api-detect-endpoint` |
 | Testes no Postman | `feature/postman-tests` |
 | README | `docs/readme` |
+| Ajustes finais | `fix/ajustes-finais` |
+| Deploy no Cloud Run | `feature/deploy` |
 
 ---
 
