@@ -1,0 +1,8 @@
+venv/
+data/
+notebooks/
+test_images/
+docs/
+postman/
+__pycache__/
+.git/
